@@ -1,0 +1,22 @@
+typeattribute netd coredomain;
+
+init_daemon_domain(netd)
+
+# Allow netd to spawn dnsmasq in it's own domain
+domain_auto_trans(netd, dnsmasq_exec, dnsmasq)
+
+# Allow netd to start clatd in its own domain
+domain_auto_trans(netd, clatd_exec, clatd)
+
+# give netd permission to setup iptables rule with xt_bpf, attach program to cgroup, and read/write
+# the map created by bpfloader
+allow netd bpfloader:bpf { prog_run map_read map_write };
+
+get_prop(netd, bpf_progs_loaded_prop)
+
+# Allow netd to write to statsd.
+unix_socket_send(netd, statsdw, statsd)
+
+# Allow netd to send callbacks to network_stack
+binder_call(netd, network_stack)
+
